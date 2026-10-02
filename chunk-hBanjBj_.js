@@ -1,0 +1,1 @@
+import{Wn as se,s as D}from"./chunk-B4oIUfA9.js";import{c as Uo,d as nn}from"./main-FBJUUZJS.js";var o=class t{http=D(nn);apiUrl=Uo.apiUrl;getMine(){return this.http.get(`${this.apiUrl}/memberships/mine`)}static ɵfac=function(s){return new(s||t)};static ɵprov=se({token:t,factory:t.ɵfac,providedIn:`root`})};export{o as t};
