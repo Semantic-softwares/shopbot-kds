@@ -1,0 +1,39 @@
+<div class="min-h-screen w-full bg-slate-50 px-6 py-12 dark:bg-slate-950">
+  <div class="mx-auto max-w-3xl">
+    <app-kiosk-header title="Choose a store" subtitle="Pick which store this board belongs to">
+      <button matButton="outlined" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Log out
+      </button>
+    </app-kiosk-header>
+
+    @if (loading()) {
+      <app-loading-spinner />
+    } @else if (errorMessage() && stores().length === 0) {
+      <app-empty-state icon="error" title="Couldn't load stores" [message]="errorMessage()" />
+      <div class="mt-4 flex justify-center">
+        <button matButton="filled" (click)="refreshStores()">
+          <mat-icon>refresh</mat-icon>
+          Try again
+        </button>
+      </div>
+    } @else if (stores().length === 0) {
+      <app-empty-state
+        icon="storefront"
+        title="No stores available"
+        message="You do not have access to any store."
+      />
+    } @else {
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        @for (store of stores(); track store._id) {
+          <app-selectable-tile
+            [title]="store.name"
+            [subtitle]="store.address || ''"
+            icon="storefront"
+            (activate)="selectStore(store)"
+          />
+        }
+      </div>
+    }
+  </div>
+</div>

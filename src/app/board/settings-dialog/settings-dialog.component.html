@@ -1,0 +1,90 @@
+<h2 mat-dialog-title>{{ i18n.t('settings.title') }}</h2>
+
+<mat-dialog-content>
+  <div class="flex flex-col gap-6 pt-2">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+    <mat-label>{{ i18n.t('settings.site') }}</mat-label>
+    <mat-icon matPrefix class="mx-2">storefront</mat-icon>
+    <mat-select [value]="storeService.currentStore()?._id" (selectionChange)="switchStore($event.value)">
+      @for (store of storeService.stores(); track store._id) {
+        <mat-option [value]="store._id">{{ store.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+    <mat-label>{{ i18n.t('settings.language') }}</mat-label>
+    <mat-icon matPrefix class="mx-2">translate</mat-icon>
+    <mat-select [value]="i18n.language()" (selectionChange)="setLanguage($event.value)">
+      @for (lang of languages; track lang.code) {
+        <mat-option [value]="lang.code">{{ lang.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <section class="flex flex-col gap-2">
+    <h3 id="display-label" class="text-sm font-medium">{{ i18n.t('settings.display') }}</h3>
+    <mat-button-toggle-group
+      aria-labelledby="display-label"
+      [value]="theme.mode()"
+      (change)="setTheme($event.value)"
+      class="self-start"
+    >
+      <mat-button-toggle value="light"><mat-icon>light_mode</mat-icon> {{ i18n.t('settings.light') }}</mat-button-toggle>
+      <mat-button-toggle value="dark"><mat-icon>dark_mode</mat-icon> {{ i18n.t('settings.dark') }}</mat-button-toggle>
+    </mat-button-toggle-group>
+  </section>
+
+  <section class="flex flex-col gap-2">
+    <h3 id="sound-label" class="text-sm font-medium">{{ i18n.t('settings.sound') }}</h3>
+    <mat-slide-toggle [checked]="sound.enabled()" (change)="sound.setEnabled($event.checked)">
+      {{ i18n.t('settings.soundEnabled') }}
+    </mat-slide-toggle>
+    <div class="flex flex-col gap-1">
+      <span id="repeat-label" class="text-xs text-slate-500 dark:text-slate-400">{{ i18n.t('settings.repeat') }}</span>
+      <mat-button-toggle-group
+        aria-labelledby="repeat-label"
+        class="self-start"
+        [value]="sound.repeat()"
+        [disabled]="!sound.enabled()"
+        (change)="sound.setRepeat($event.value)"
+      >
+        <mat-button-toggle value="once">{{ i18n.t('settings.repeatOnce') }}</mat-button-toggle>
+        <mat-button-toggle value="repeat">{{ i18n.t('settings.repeatUntilStarted') }}</mat-button-toggle>
+      </mat-button-toggle-group>
+      @if (sound.repeat() === 'repeat') {
+        <span class="text-xs text-slate-500 dark:text-slate-400">{{ i18n.t('settings.repeatHint') }}</span>
+      }
+    </div>
+    <mat-radio-group
+      aria-labelledby="sound-label"
+      class="grid grid-cols-1 gap-1 sm:grid-cols-2"
+      [value]="sound.sound()"
+      [disabled]="!sound.enabled()"
+      (change)="chooseSound($event.value)"
+    >
+      @for (id of sounds; track id) {
+        <div class="flex items-center justify-between rounded-lg pr-1 ring-1 ring-slate-200 dark:ring-slate-700">
+          <mat-radio-button [value]="id">{{ i18n.t('sound.' + id) }}</mat-radio-button>
+          <button
+            matIconButton
+            type="button"
+            [attr.aria-label]="i18n.t('settings.preview') + ' ' + i18n.t('sound.' + id)"
+            (click)="sound.play(id)"
+          >
+            <mat-icon>play_arrow</mat-icon>
+          </button>
+        </div>
+      }
+    </mat-radio-group>
+  </section>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions class="!justify-between">
+  <button matButton type="button" (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    {{ i18n.t('settings.logout') }}
+  </button>
+  <button matButton="filled" type="button" mat-dialog-close cdkFocusInitial>{{ i18n.t('settings.done') }}</button>
+</mat-dialog-actions>

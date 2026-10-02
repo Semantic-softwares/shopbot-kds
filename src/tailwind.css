@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+
+/* Tailwind v4 dark-mode variant driven by an explicit `data-theme` attribute
+ * (set by ThemeService) rather than the `prefers-color-scheme` media query
+ * alone — lets kitchen staff override the system default from the UI. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));

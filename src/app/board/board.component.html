@@ -1,0 +1,159 @@
+<div class="flex h-screen w-full flex-col bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-white">
+  <!-- Top bar -->
+  <header class="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+    <div class="flex items-center gap-3">
+      <span class="grid h-10 w-10 place-items-center rounded-xl bg-orange-500 text-white" aria-hidden="true">
+        <mat-icon>soup_kitchen</mat-icon>
+      </span>
+      <div class="leading-tight">
+        <p class="text-lg font-bold">{{ store()?.name }}</p>
+        <p class="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ i18n.t('app.subtitle') }}</p>
+      </div>
+    </div>
+
+    <div role="group" [attr.aria-label]="i18n.t('board.filterByType')" class="flex flex-wrap gap-2">
+      @for (type of typeFilters; track type) {
+        <button
+          type="button"
+          class="kds-chip"
+          [class.kds-chip--active]="typeFilter() === type"
+          [attr.aria-pressed]="typeFilter() === type"
+          (click)="typeFilter.set(type)"
+        >
+          <mat-icon class="!h-5 !w-5 !text-xl" aria-hidden="true">{{ typeIcons[type] }}</mat-icon>
+          {{ i18n.t('type.' + type) }}
+          <span class="kds-chip__count">{{ typeCounts()[type] }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="ml-auto flex items-center gap-4">
+      <span
+        role="status"
+        class="flex items-center"
+        [class]="connected() ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
+        [matTooltip]="connected() ? i18n.t('board.live') : i18n.t('board.reconnecting')"
+      >
+        <mat-icon aria-hidden="true">{{ connected() ? 'wifi' : 'wifi_off' }}</mat-icon>
+        <span class="sr-only">{{ connected() ? i18n.t('board.live') : i18n.t('board.reconnecting') }}</span>
+      </span>
+      <div class="text-right leading-tight" aria-hidden="true">
+        <p class="text-xl font-bold tabular-nums">{{ clock().time }}</p>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ clock().date }}</p>
+      </div>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="kds-compact-field w-52">
+        <mat-icon matPrefix class="mx-2" aria-hidden="true">desktop_windows</mat-icon>
+        <mat-select
+          [value]="station()?.id"
+          [panelWidth]="null"
+          [attr.aria-label]="i18n.t('board.station')"
+          (selectionChange)="switchStation($event.value)"
+        >
+          <mat-option [value]="ALL_STATIONS_ID">{{ i18n.t('board.allStations') }}</mat-option>
+          @for (s of stations(); track s._id) {
+            <mat-option [value]="s._id">{{ s.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <div role="alert" class="mx-4 mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Columns: one per status step -->
+  <main class="min-h-0 flex-1 overflow-x-auto p-4">
+    @if (loading()) {
+      <p class="py-24 text-center text-slate-500">{{ i18n.t('board.loading') }}</p>
+    } @else {
+      <div class="flex h-full gap-4" [style.min-width.px]="columns().length * 300">
+        @for (column of columns(); track column.step.key) {
+          <section class="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-slate-200/60 dark:bg-slate-900/60" [attr.aria-labelledby]="'col-' + column.step.key">
+            <h2
+              [id]="'col-' + column.step.key"
+              class="flex items-center justify-between px-4 py-2.5 text-lg font-bold uppercase tracking-wide"
+              [class]="column.tone.header"
+            >
+              <span>{{ i18n.t('status.' + column.step.key) }} ({{ column.orders.length }})</span>
+              @if ($first && sound.enabled()) {
+                <mat-icon aria-hidden="true">notifications_active</mat-icon>
+              }
+            </h2>
+            <div role="list" [attr.aria-label]="i18n.t('status.' + column.step.key)" class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
+              @for (order of column.orders; track order.orderId) {
+                <app-order-card
+                  [order]="order"
+                  [tone]="column.tone"
+                  [now]="now()"
+                  [selected]="selectedOrderId() === order.orderId"
+                  [fresh]="freshIds().has(order.orderId)"
+                  [style.view-transition-name]="'kds-o-' + order.orderId"
+                  [showStations]="station()?.id === ALL_STATIONS_ID"
+                  (selectRequest)="selectedOrderId.set(order.orderId)"
+                  (advance)="advance(order)"
+                />
+              } @empty {
+                <p class="py-10 text-center text-sm text-slate-500 dark:text-slate-400">{{ i18n.t('board.noTickets') }}</p>
+              }
+            </div>
+          </section>
+        }
+      </div>
+    }
+  </main>
+
+  <!-- Bottom action bar -->
+  <footer class="kds-actionbar flex flex-wrap items-center gap-3 border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+    @for (action of actions(); track action.step.key) {
+      <button
+        matButton="filled"
+        type="button"
+        class="!h-12 !px-5 !text-[15px] !font-semibold"
+        [style.--mat-button-filled-container-color]="action.tone.solid"
+        [style.--mat-button-filled-label-text-color]="'#fff'"
+        [disabled]="!canMoveTo(action.step)"
+        [attr.aria-keyshortcuts]="action.step.shortcut || null"
+        (click)="moveSelectedTo(action.step)"
+      >
+        {{ i18n.t('action.' + action.step.key) }}
+        @if (action.step.shortcut) {
+          <kbd class="ml-3 rounded bg-white/20 px-1.5 py-0.5 text-xs">{{ action.step.shortcut }}</kbd>
+        }
+      </button>
+    }
+    <button
+      matButton="outlined"
+      type="button"
+      class="!h-12 !px-5 !text-[15px] !font-semibold"
+      [disabled]="!canRecall()"
+      aria-keyshortcuts="Backspace"
+      (click)="recallSelected()"
+    >
+      <mat-icon>undo</mat-icon>
+      {{ i18n.t('action.recall') }}
+      <kbd class="ml-3 rounded bg-slate-500/15 px-1.5 py-0.5 text-xs">⌫</kbd>
+    </button>
+
+    <p class="hidden text-xs text-slate-500 xl:block dark:text-slate-400">{{ i18n.t('board.keyboardHint') }}</p>
+
+    <div class="ml-auto flex items-center gap-2">
+      <button
+        matButton
+        type="button"
+        class="!h-12"
+        [attr.aria-pressed]="sound.enabled()"
+        (click)="sound.setEnabled(!sound.enabled())"
+      >
+        <mat-icon>{{ sound.enabled() ? 'volume_up' : 'volume_off' }}</mat-icon>
+        {{ i18n.t('board.sound') }}: {{ sound.enabled() ? i18n.t('board.on') : i18n.t('board.off') }}
+      </button>
+      <button matButton type="button" class="!h-12" (click)="openSettings()">
+        <mat-icon>settings</mat-icon>
+        {{ i18n.t('board.settings') }}
+      </button>
+    </div>
+  </footer>
+</div>

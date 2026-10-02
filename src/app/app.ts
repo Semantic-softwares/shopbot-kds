@@ -1,12 +1,17 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  template: `<router-outlet />`,
 })
 export class App {
-  protected readonly title = signal('shopbot-kds');
+  // Injected (not just imported) so the light/dark `data-theme` attribute is
+  // applied to <html> at bootstrap, before the first route renders —
+  // ThemeService is otherwise only instantiated lazily wherever a
+  // ThemeToggleComponent first mounts.
+  private theme = inject(ThemeService);
 }

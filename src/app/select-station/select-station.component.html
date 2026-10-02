@@ -1,0 +1,59 @@
+<div class="min-h-screen w-full bg-slate-50 px-6 py-12 dark:bg-slate-950">
+  <div class="mx-auto max-w-3xl">
+    <app-kiosk-header title="Choose a station" [subtitle]="store()?.name || ''">
+      <button matButton="outlined" (click)="changeStore()">
+        <mat-icon>storefront</mat-icon>
+        Change store
+      </button>
+      <button matButton="outlined" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Log out
+      </button>
+    </app-kiosk-header>
+
+    @if (errorMessage()) {
+      <div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/30">
+        <p class="text-sm text-red-700 dark:text-red-300">{{ errorMessage() }}</p>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="flex justify-center py-16">
+        <app-loading-spinner size="lg" color="#f97316" />
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <app-selectable-tile
+          title="All stations"
+          subtitle="Every order, every station"
+          icon="dashboard"
+          [busy]="connecting() === ALL_STATIONS_ID"
+          [disabled]="!!connecting()"
+          (activate)="selectStation(ALL_STATIONS_ID, 'All stations')"
+        />
+
+        @for (station of stations(); track station._id) {
+          <app-selectable-tile
+            [title]="station.name"
+            [subtitle]="station.type"
+            icon="soup_kitchen"
+            [iconColor]="station.color || '#f97316'"
+            [busy]="connecting() === station._id"
+            [disabled]="!!connecting()"
+            (activate)="selectStation(station._id, station.name)"
+          />
+        }
+
+        @if (stations().length === 0) {
+          <div class="col-span-full">
+            <app-empty-state
+              icon="soup_kitchen"
+              title="No stations configured yet"
+              message="&quot;All stations&quot; still works."
+            />
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

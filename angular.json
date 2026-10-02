@@ -2,7 +2,8 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
-    "packageManager": "npm"
+    "packageManager": "npm",
+    "analytics": "c23c2e4d-d3cf-4aa1-b251-fd7e79fa7223"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -30,6 +31,7 @@
               }
             ],
             "styles": [
+              "src/tailwind.css",
               "src/styles.scss"
             ]
           },
@@ -45,6 +47,12 @@
                   "type": "anyComponentStyle",
                   "maximumWarning": "4kB",
                   "maximumError": "8kB"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
                 }
               ],
               "outputHashing": "all"
@@ -71,6 +79,12 @@
         },
         "test": {
           "builder": "@angular/build:unit-test"
+        },
+        "deploy": {
+          "builder": "angular-cli-ghpages:deploy",
+          "options": {
+            "buildTarget": "shopbot-kds:build:production"
+          }
         }
       }
     }
