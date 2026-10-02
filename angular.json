@@ -83,7 +83,10 @@
         "deploy": {
           "builder": "angular-cli-ghpages:deploy",
           "options": {
-            "buildTarget": "shopbot-kds:build:production"
+            "buildTarget": "shopbot-kds:build:production",
+            "cname": "kds.shopbot.africa",
+            "name": "alexonozor",
+            "email": "alexonozor@gmail.com"
           }
         }
       }
