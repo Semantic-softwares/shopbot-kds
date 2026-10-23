@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "publish": "ng deploy",
-    "heroku-postbuild": "ng build --configuration production"
+    "heroku-postbuild": "ng build --configuration production",
+    "start:prod": "node server.js"
   },
   "private": true,
   "packageManager": "npm@11.19.0",
