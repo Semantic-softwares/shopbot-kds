@@ -2,6 +2,17 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.6.
 
+## Deployment
+
+The KDS runs on Heroku (app `shopbot-kds`, region eu) at https://kds.shopbot.africa.
+Every push to `main` on GitHub (`Semantic-softwares/shopbot-kds`) is built and released automatically.
+
+- Heroku runs `npm run heroku-postbuild` (`ng build --configuration production`) and then `node server.js`, a small
+  dependency-free server for `dist/shopbot-kds/browser` (unknown paths fall back to `index.html`, `index.html` is never cached,
+  hashed bundles are cached for a year, plain http is redirected to https).
+- Manual deploy if ever needed: `git push heroku main`. Logs: `heroku logs --tail -a shopbot-kds`.
+- Custom domain: `kds.shopbot.africa` is a CNAME to the DNS target shown by `heroku domains -a shopbot-kds`.
+
 ## Development server
 
 To start a local development server, run:
