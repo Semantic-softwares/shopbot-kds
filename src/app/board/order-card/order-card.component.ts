@@ -68,7 +68,7 @@ export class OrderCardComponent implements FocusableOption {
 
   protected readonly ariaLabel = computed(() => {
     const order = this.order();
-    const items = order.items.map((i) => `${i.quantity} ${i.name}`).join(', ');
+    const items = order.items.map((i) => `${i.quantity} ${i.name}${this.optionLines(i).length ? ' (' + this.optionLines(i).map((o) => `${o.quantity} ${o.label}`).join(', ') + ')' : ''}${i.notes ? ', note: ' + i.notes : ''}`).join(', ');
     return `#${order.reference ?? ''}, ${this.i18n.t('type.' + order.orderType)}, ${this.subtitle()}, ${this.timer()}. ${items}`;
   });
 
@@ -76,7 +76,15 @@ export class OrderCardComponent implements FocusableOption {
     this.host.nativeElement.focus();
   }
 
-  protected optionsSummary(item: KitchenOrderItem): string {
-    return item.options?.map((o) => o.optionItemName || o.name).join(', ') ?? '';
+  /**
+   * Every chosen option, one per line, with its own quantity (e.g. "Rice ×2") and the group it belongs to when that adds meaning
+   * ("Sides: Rice"). The kitchen must never have to guess how many of an option to make.
+   */
+  protected optionLines(item: KitchenOrderItem): { quantity: number; label: string }[] {
+    return (item.options ?? []).map((o) => {
+      const chosen = (o.optionItemName || '').trim();
+      const group = (o.name || '').trim();
+      return { quantity: Number(o.quantity) > 0 ? Number(o.quantity) : 1, label: chosen && group && chosen !== group ? `${group}: ${chosen}` : chosen || group };
+    });
   }
 }
